@@ -34,24 +34,7 @@ public class SSMLValidator {
     /// - Parameter ssml: 検証するSSML文字列
     /// - Returns: 検証結果
     public func validate(_ ssml: String) -> SSMLValidationResult {
-        // SSML形式の基本チェック
-        guard ssml.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<speak") else {
-            return SSMLValidationResult(
-                isValidSSML: false,
-                supportedTags: [],
-                unsupportedTags: [],
-                errorMessage: "SSML must start with <speak> tag"
-            )
-        }
-        
-        guard ssml.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix("</speak>") else {
-            return SSMLValidationResult(
-                isValidSSML: false,
-                supportedTags: [],
-                unsupportedTags: [],
-                errorMessage: "SSML must end with </speak> tag"
-            )
-        }
+        let trimmedSSML = ssml.trimmingCharacters(in: .whitespacesAndNewlines)
         
         // XMLパーサーで検証
         let parser = XMLParser(data: Data(ssml.utf8))
@@ -74,11 +57,27 @@ public class SSMLValidator {
         let supported = usedTags.intersection(supportedTags)
         let unsupported = usedTags.subtracting(supportedTags)
         
+        // speakタグの有無をチェック
+        let hasSpeak = trimmedSSML.hasPrefix("<speak") && trimmedSSML.hasSuffix("</speak>")
+        
+        // 有効性の判定：
+        // 1. speakタグがある場合は常に有効
+        // 2. speakタグがなくても、全てのタグがサポートされていれば有効
+        let isValid = hasSpeak || unsupported.isEmpty
+        
+        // エラーメッセージの生成
+        var errorMessage: String? = nil
+        if !isValid {
+            if !hasSpeak && !unsupported.isEmpty {
+                errorMessage = "Contains unsupported tags without <speak> wrapper: \(unsupported.sorted().joined(separator: ", "))"
+            }
+        }
+        
         return SSMLValidationResult(
-            isValidSSML: true,
+            isValidSSML: isValid,
             supportedTags: supported,
             unsupportedTags: unsupported,
-            errorMessage: nil
+            errorMessage: errorMessage
         )
     }
 }

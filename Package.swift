@@ -16,6 +16,9 @@ let package = Package(
         .library(
             name: "SSMLSwift",
             targets: ["SSMLSwift"]),
+        .executable(
+            name: "SSMLSwiftDemo",
+            targets: ["SSMLSwiftDemo"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -26,6 +29,9 @@ let package = Package(
         .target(
             name: "SSMLSwift",
             dependencies: []),
+        .executableTarget(
+            name: "SSMLSwiftDemo",
+            dependencies: ["SSMLSwift"]),
         .testTarget(
             name: "SSMLSwiftTests",
             dependencies: ["SSMLSwift"]),

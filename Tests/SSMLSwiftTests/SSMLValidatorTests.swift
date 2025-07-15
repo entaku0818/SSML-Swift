@@ -67,20 +67,21 @@ final class SSMLValidatorTests: XCTestCase {
     // MARK: - Invalid SSML Tests
     
     func testMissingSpeakStartTag() {
+        // prosodyはサポートされているタグなので、speakタグがなくても有効
         let ssml = """
         <prosody rate="slow">テキスト</prosody>
-        </speak>
         """
         
         let result = validator.validate(ssml)
         
-        XCTAssertFalse(result.isValidSSML)
-        XCTAssertEqual(result.errorMessage, "SSML must start with <speak> tag")
-        XCTAssertTrue(result.supportedTags.isEmpty)
+        XCTAssertTrue(result.isValidSSML)
+        XCTAssertNil(result.errorMessage)
+        XCTAssertEqual(result.supportedTags, ["prosody"])
         XCTAssertTrue(result.unsupportedTags.isEmpty)
     }
     
     func testMissingSpeakEndTag() {
+        // 不正なXML（閉じタグがない）
         let ssml = """
         <speak>
             <emphasis>テキスト</emphasis>
@@ -89,9 +90,8 @@ final class SSMLValidatorTests: XCTestCase {
         let result = validator.validate(ssml)
         
         XCTAssertFalse(result.isValidSSML)
-        XCTAssertEqual(result.errorMessage, "SSML must end with </speak> tag")
-        XCTAssertTrue(result.supportedTags.isEmpty)
-        XCTAssertTrue(result.unsupportedTags.isEmpty)
+        XCTAssertNotNil(result.errorMessage)
+        XCTAssertTrue(result.errorMessage?.contains("NSXMLParserErrorDomain") ?? false)
     }
     
     func testMalformedXML() {
@@ -115,7 +115,7 @@ final class SSMLValidatorTests: XCTestCase {
         let result = validator.validate(ssml)
         
         XCTAssertFalse(result.isValidSSML)
-        XCTAssertEqual(result.errorMessage, "SSML must start with <speak> tag")
+        XCTAssertNotNil(result.errorMessage)
     }
     
     func testWhitespaceOnly() {
@@ -124,7 +124,7 @@ final class SSMLValidatorTests: XCTestCase {
         let result = validator.validate(ssml)
         
         XCTAssertFalse(result.isValidSSML)
-        XCTAssertEqual(result.errorMessage, "SSML must start with <speak> tag")
+        XCTAssertNotNil(result.errorMessage)
     }
     
     // MARK: - Edge Cases
@@ -178,6 +178,42 @@ final class SSMLValidatorTests: XCTestCase {
         XCTAssertTrue(result.isValidSSML)
         XCTAssertNil(result.errorMessage)
         XCTAssertTrue(result.supportedTags.contains("break"))
+    }
+    
+    // MARK: - New Validation Logic Tests
+    
+    func testSupportedTagsWithoutSpeak() {
+        // サポートされているタグのみを使用（speakタグなし）- 単一のルート要素
+        let ssml = """
+        <prosody rate="slow">
+            <emphasis level="strong">重要</emphasis>
+            <break time="500ms"/>
+            ゆっくり
+        </prosody>
+        """
+        
+        let result = validator.validate(ssml)
+        
+        XCTAssertTrue(result.isValidSSML)
+        XCTAssertNil(result.errorMessage)
+        XCTAssertEqual(result.supportedTags.sorted(), ["break", "emphasis", "prosody"])
+        XCTAssertTrue(result.unsupportedTags.isEmpty)
+    }
+    
+    func testUnsupportedTagsWithoutSpeak() {
+        // サポートされていないタグを含む（speakタグなし）
+        let ssml = """
+        <voice name="ja-JP">
+            <prosody rate="slow">ゆっくり</prosody>
+        </voice>
+        """
+        
+        let result = validator.validate(ssml)
+        
+        XCTAssertFalse(result.isValidSSML)
+        XCTAssertEqual(result.errorMessage, "Contains unsupported tags without <speak> wrapper: voice")
+        XCTAssertEqual(result.supportedTags, ["prosody"])
+        XCTAssertEqual(result.unsupportedTags, ["voice"])
     }
     
     // MARK: - Performance Tests
