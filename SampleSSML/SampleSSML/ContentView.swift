@@ -103,7 +103,6 @@ struct ContentView: View {
                     Button("Valid (All Supported)") {
                         ssmlText = """
                         <speak>
-                            <emphasis level="strong">強調</emphasis>
                             <break time="500ms"/>
                             <prosody rate="fast" pitch="high">速く高い声で</prosody>
                             <say-as interpret-as="telephone">090-1234-5678</say-as>
@@ -126,9 +125,8 @@ struct ContentView: View {
                     
                     Button("Invalid") {
                         ssmlText = """
-                        <prosody rate="slow">
-                            speakタグがありません
-                        </prosody>
+                            <emphasis level="strong">強調</emphasis>
+
                         """
                     }
                     .buttonStyle(.bordered)
@@ -147,15 +145,20 @@ struct ContentView: View {
     }
     
     private func speakSSML() {
-        // AVSpeechUtteranceはSSMLを直接サポートしていないため、
-        // プレーンテキストで読み上げ（デモ用）
-        let plainText = ssmlText
-            .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        let utterance = AVSpeechUtterance(string: plainText)
-        utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
-        synthesizer.speak(utterance)
+        // AVSpeechUtteranceのSSMLサポートを使用
+        if let utterance = AVSpeechUtterance(ssmlRepresentation: ssmlText) {
+            utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+            synthesizer.speak(utterance)
+        } else {
+            // SSMLパースに失敗した場合はプレーンテキストとして読み上げ
+            let plainText = ssmlText
+                .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            let utterance = AVSpeechUtterance(string: plainText)
+            utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+            synthesizer.speak(utterance)
+        }
     }
 }
 

@@ -23,7 +23,6 @@ public class SSMLValidator {
     private let supportedTags: Set<String> = [
         "speak",
         "break",
-        "emphasis",
         "prosody",
         "say-as"
     ]

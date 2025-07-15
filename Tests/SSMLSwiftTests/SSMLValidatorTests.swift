@@ -20,7 +20,6 @@ final class SSMLValidatorTests: XCTestCase {
     func testValidSSMLWithSupportedTags() {
         let ssml = """
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis">
-            <emphasis level="strong">強調</emphasis>
             <break time="1s"/>
             <prosody rate="slow" pitch="high">ゆっくり高い声</prosody>
             <say-as interpret-as="telephone">090-1234-5678</say-as>
@@ -31,7 +30,7 @@ final class SSMLValidatorTests: XCTestCase {
         
         XCTAssertTrue(result.isValidSSML)
         XCTAssertNil(result.errorMessage)
-        XCTAssertEqual(result.supportedTags, ["speak", "emphasis", "break", "prosody", "say-as"])
+        XCTAssertEqual(result.supportedTags, ["speak", "break", "prosody", "say-as"])
         XCTAssertTrue(result.unsupportedTags.isEmpty)
     }
     
@@ -84,7 +83,7 @@ final class SSMLValidatorTests: XCTestCase {
         // 不正なXML（閉じタグがない）
         let ssml = """
         <speak>
-            <emphasis>テキスト</emphasis>
+            <prosody rate="slow">テキスト</prosody>
         """
         
         let result = validator.validate(ssml)
@@ -97,7 +96,7 @@ final class SSMLValidatorTests: XCTestCase {
     func testMalformedXML() {
         let ssml = """
         <speak>
-            <emphasis>閉じタグがない
+            <prosody rate="slow">閉じタグがない
         </speak>
         """
         
@@ -151,9 +150,7 @@ final class SSMLValidatorTests: XCTestCase {
         let ssml = """
         <speak>
             <prosody rate="slow">
-                <emphasis level="strong">
-                    <say-as interpret-as="date">2024-01-01</say-as>
-                </emphasis>
+                <say-as interpret-as="date">2024-01-01</say-as>
             </prosody>
         </speak>
         """
@@ -162,7 +159,7 @@ final class SSMLValidatorTests: XCTestCase {
         
         XCTAssertTrue(result.isValidSSML)
         XCTAssertNil(result.errorMessage)
-        XCTAssertEqual(result.supportedTags, ["speak", "prosody", "emphasis", "say-as"])
+        XCTAssertEqual(result.supportedTags, ["speak", "prosody", "say-as"])
         XCTAssertTrue(result.unsupportedTags.isEmpty)
     }
     
@@ -186,7 +183,7 @@ final class SSMLValidatorTests: XCTestCase {
         // サポートされているタグのみを使用（speakタグなし）- 単一のルート要素
         let ssml = """
         <prosody rate="slow">
-            <emphasis level="strong">重要</emphasis>
+            <say-as interpret-as="date">2024-01-01</say-as>
             <break time="500ms"/>
             ゆっくり
         </prosody>
@@ -196,7 +193,7 @@ final class SSMLValidatorTests: XCTestCase {
         
         XCTAssertTrue(result.isValidSSML)
         XCTAssertNil(result.errorMessage)
-        XCTAssertEqual(result.supportedTags.sorted(), ["break", "emphasis", "prosody"])
+        XCTAssertEqual(result.supportedTags.sorted(), ["break", "prosody", "say-as"])
         XCTAssertTrue(result.unsupportedTags.isEmpty)
     }
     
@@ -223,7 +220,7 @@ final class SSMLValidatorTests: XCTestCase {
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis">
             <prosody rate="fast" pitch="high" volume="loud">
                 これは長いテキストです。
-                <emphasis level="strong">強調部分</emphasis>
+                <say-as interpret-as="number">123</say-as>
                 <break time="500ms"/>
                 <say-as interpret-as="telephone">090-1234-5678</say-as>
             </prosody>
