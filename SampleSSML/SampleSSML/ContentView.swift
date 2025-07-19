@@ -123,7 +123,7 @@ struct ContentView: View {
                             .buttonStyle(.borderedProminent)
                             .frame(maxWidth: .infinity)
                         }
-                        
+
                         Button("あいさつ２　HAKATA.swift") {
                             ssmlText = """
                             <speak>
@@ -150,6 +150,17 @@ struct ContentView: View {
                         .buttonStyle(.bordered)
                         .frame(maxWidth: .infinity)
 
+                        Button("不明なタグ") {
+                            ssmlText = """
+                            <speak>
+                                <aaaaa>
+                                    <bbbb>不明なタグがあった場合に話すことはできます</bbbb>
+                                </aaaaa>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
 
                         Button("英語と日本語") {
                             ssmlText = """
@@ -164,20 +175,6 @@ struct ContentView: View {
                         }
                         .buttonStyle(.bordered)
                         .frame(maxWidth: .infinity)
-
-
-                        Button("不明なタグ") {
-                            ssmlText = """
-                            <speak>
-                                <aaaaa>
-                                    <bbbb>不明なタグがあった場合に話すことはできます</bbbb>
-                                </aaaaa>
-                            </speak>
-                            """
-                        }
-                        .buttonStyle(.bordered)
-                        .frame(maxWidth: .infinity)
-
 
 
                         Button("emphasis") {
