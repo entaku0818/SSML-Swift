@@ -12,7 +12,6 @@ import AVFoundation
 struct ContentView: View {
     @State private var ssmlText = """
     <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis">
-        <emphasis level="strong">重要な</emphasis>お知らせです。
         <break time="1s"/>
         <prosody rate="slow">ゆっくり話します。</prosody>
     </speak>
@@ -24,144 +23,378 @@ struct ContentView: View {
     private let synthesizer = AVSpeechSynthesizer()
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("SSML Validator Sample")
-                .font(.largeTitle)
-                .padding()
-            
-            // SSML入力エリア
-            VStack(alignment: .leading) {
-                Text("SSML Input:")
-                    .font(.headline)
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("SSML Validator Sample")
+                    .font(.largeTitle)
+                    .padding()
                 
-                TextEditor(text: $ssmlText)
-                    .font(.system(.body, design: .monospaced))
-                    .frame(minHeight: 200)
-                    .border(Color.gray, width: 1)
-            }
-            .padding()
-            
-            // 検証ボタン
-            Button("Validate SSML") {
-                validateSSML()
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isValidating)
-            
-            // 結果表示
-            if let result = validationResult {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Validation Result:")
+                // SSML入力エリア
+                VStack(alignment: .leading) {
+                    Text("SSML Input:")
+                        .font(.headline)
+                    
+                    TextEditor(text: .constant(ssmlText))
+                        .font(.system(.body, design: .monospaced))
+                        .frame(minHeight: 200)
+                        .border(Color.gray, width: 1)
+                        .disabled(true)
+                }
+                .padding()
+                
+                // 検証＆読み上げボタン
+                HStack {
+                    Button("Validate & Speak") {
+                        validateAndSpeak()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isValidating)
+                    
+                    Button("Speak Only") {
+                        speakOnly()
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isValidating)
+                }
+                
+                // 結果表示
+                if let result = validationResult {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Validation Result:")
+                            .font(.headline)
+                        
+                        HStack {
+                            Text("Valid SSML:")
+                            Text(result.isValidSSML ? "✅ Yes" : "❌ No")
+                                .foregroundColor(result.isValidSSML ? .green : .red)
+                        }
+                        
+                        if let error = result.errorMessage {
+                            Text("Error: \(error)")
+                                .foregroundColor(.red)
+                        }
+                        
+                        if !result.supportedTags.isEmpty {
+                            VStack(alignment: .leading) {
+                                Text("Supported Tags:")
+                                Text(result.supportedTags.sorted().joined(separator: ", "))
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        
+                        if !result.unsupportedTags.isEmpty {
+                            VStack(alignment: .leading) {
+                                Text("Unsupported Tags:")
+                                Text(result.unsupportedTags.sorted().joined(separator: ", "))
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                
+                // サンプルSSMLボタン
+                VStack(spacing: 15) {
+                    Text("Basic SSML Examples:")
                         .font(.headline)
                     
                     HStack {
-                        Text("Valid SSML:")
-                        Text(result.isValidSSML ? "✅ Yes" : "❌ No")
-                            .foregroundColor(result.isValidSSML ? .green : .red)
-                    }
-                    
-                    if let error = result.errorMessage {
-                        Text("Error: \(error)")
-                            .foregroundColor(.red)
-                    }
-                    
-                    if !result.supportedTags.isEmpty {
-                        VStack(alignment: .leading) {
-                            Text("Supported Tags:")
-                            Text(result.supportedTags.sorted().joined(separator: ", "))
-                                .foregroundColor(.green)
+                        Button("AVFoundation Example") {
+                            ssmlText = """
+                            <speak>
+                                The quick brown fox jumped over the lazy dog.
+                                <break time="200ms"/>
+                                <prosody rate="0.57" pitch="0.8">
+                                    This text is spoken with adjusted rate and pitch.
+                                </prosody>
+                                <break time="200ms"/>
+                                <prosody volume="0.8">
+                                    And this has adjusted volume.
+                                </prosody>
+                            </speak>
+                            """
                         }
-                    }
-                    
-                    if !result.unsupportedTags.isEmpty {
-                        VStack(alignment: .leading) {
-                            Text("Unsupported Tags:")
-                            Text(result.unsupportedTags.sorted().joined(separator: ", "))
-                                .foregroundColor(.orange)
+                        .buttonStyle(.bordered)
+                        
+                        Button("Break Examples") {
+                            ssmlText = """
+                            <speak>
+                                Take a breath <break time="200ms"/> here.
+                                Longer pause <break time="3s"/> three seconds.
+                                <break strength="weak"/> weak break.
+                                <break strength="medium"/> medium break.
+                                <break strength="strong"/> strong break.
+                            </speak>
+                            """
                         }
-                    }
-                    
-                    // 音声合成ボタン（有効なSSMLの場合のみ）
-                    if result.isValidSSML {
-                        Button("Speak with Apple TTS") {
-                            speakSSML()
+                        .buttonStyle(.bordered)
+                        
+                        Button("Prosody Examples") {
+                            ssmlText = """
+                            <speak>
+                                <prosody rate="x-slow">extra slow speech</prosody>
+                                <prosody rate="slow">slow speech</prosody>
+                                <prosody rate="medium">medium speech</prosody>
+                                <prosody rate="fast">fast speech</prosody>
+                                <prosody rate="x-fast">extra fast speech</prosody>
+                                <prosody pitch="x-low">very low pitch</prosody>
+                                <prosody pitch="low">low pitch</prosody>
+                                <prosody pitch="medium">medium pitch</prosody>
+                                <prosody pitch="high">high pitch</prosody>
+                                <prosody pitch="x-high">very high pitch</prosody>
+                            </speak>
+                            """
                         }
                         .buttonStyle(.bordered)
                     }
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
-            }
-            
-            // サンプルSSMLボタン
-            VStack {
-                Text("Sample SSML:")
-                    .font(.headline)
-                
-                HStack {
-                    Button("Valid (All Supported)") {
-                        ssmlText = """
-                        <speak>
-                            <break time="500ms"/>
-                            <prosody rate="fast" pitch="high">速く高い声で</prosody>
-                            <say-as interpret-as="telephone">090-1234-5678</say-as>
-                        </speak>
-                        """
-                    }
-                    .buttonStyle(.bordered)
                     
-                    Button("Valid (Mixed)") {
-                        ssmlText = """
-                        <speak>
-                            <voice name="ja-JP">
-                                <prosody rate="slow">ゆっくり</prosody>
-                                <phoneme alphabet="ipa" ph="test">test</phoneme>
-                            </voice>
-                        </speak>
-                        """
-                    }
-                    .buttonStyle(.bordered)
+                    Text("W3C SSML 1.1 Examples:")
+                        .font(.headline)
+                        .padding(.top)
                     
-                    Button("Invalid") {
-                        ssmlText = """
-                            <emphasis level="strong">強調</emphasis>
+                    HStack {
+                        Button("Say-As Numbers") {
+                            ssmlText = """
+                            <speak>
+                                The number is <say-as interpret-as="cardinal">12345</say-as>.
+                                The ordinal is <say-as interpret-as="ordinal">1</say-as>.
+                                Phone: <say-as interpret-as="telephone">+1-800-555-1234</say-as>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Say-As Date/Time") {
+                            ssmlText = """
+                            <speak>
+                                The date is <say-as interpret-as="date" format="mdy">01/02/2023</say-as>.
+                                The time is <say-as interpret-as="time" format="hms24">14:30:00</say-as>.
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Say-As Currency") {
+                            ssmlText = """
+                            <speak>
+                                That costs <say-as interpret-as="currency">$25.50</say-as>.
+                                In Japan it's <say-as interpret-as="currency">¥1000</say-as>.
+                                In Europe it's <say-as interpret-as="currency">€50</say-as>.
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    
+                    HStack {
+                        Button("Paragraph & Sentence") {
+                            ssmlText = """
+                            <speak>
+                                <aaaaa>
+                                    <bbbb>This is the first sentence of the paragraph.</bbbb>
+                                    <bbbbb>Here's another sentence.</bbbbb>
+                                </aaaaa>
+                                <p>
+                                    <s>This is a new paragraph.</s>
+                                </p>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
 
-                        """
+                        
+                        Button("Sub (Alias)") {
+                            ssmlText = """
+                            <speak>
+                                <sub alias="World Wide Web Consortium">W3C</sub> defines standards.
+                                <sub alias="doctor">Dr.</sub> Smith will see you.
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.bordered)
+                    
+                    Text("Advanced W3C Examples:")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    HStack {
+                        Button("Phoneme") {
+                            ssmlText = """
+                            <speak>
+                                You say <phoneme alphabet="ipa" ph="təˈmeɪtoʊ">tomato</phoneme>.
+                                I say <phoneme alphabet="ipa" ph="təˈmɑːtoʊ">tomato</phoneme>.
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Voice Selection") {
+                            ssmlText = """
+                            <speak>
+                                <voice gender="female" age="10">Mary had a little lamb.</voice>
+                                <voice name="Mike">I want to be like Mike.</voice>
+                                <voice variant="2">This is variant number two.</voice>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Mark") {
+                            ssmlText = """
+                            <speak>
+                                Go to the store <mark name="store"/> and buy some milk.
+                                <mark name="here"/> Proceed to the checkout.
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    
+                    HStack {
+                        Button("Emphasis Levels") {
+                            ssmlText = """
+                            <speak>
+                                <emphasis level="strong">This is strong emphasis.</emphasis>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Say-As Spell Out") {
+                            ssmlText = """
+                            <speak>
+                                <say-as interpret-as="spell-out">hello</say-as>
+                                <say-as interpret-as="spell-out">ABC</say-as>
+                                <say-as interpret-as="characters">12345</say-as>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Button("Mixed Prosody") {
+                            ssmlText = """
+                            <speak>
+                                <prosody rate="slow" pitch="low" volume="soft">
+                                    This is spoken slowly, with low pitch and soft volume.
+                                </prosody>
+                                <prosody rate="200%" pitch="+5st" volume="+10dB">
+                                    This is fast, higher pitched, and louder.
+                                </prosody>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    
+                    Text("HAKATA.swift Demo 🎉:")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    HStack {
+                        Button("HAKATA.swift") {
+                            ssmlText = """
+                            <speak>
+                                こんにちは！
+                                今日はHAKATA.swiftに参加しています。
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("HAKATA.(ドット)swift") {
+                            ssmlText = """
+                            <speak>
+                                こんにちは！
+                                今日は<prosody rate="slow">HAKATA</prosody>
+                                <break time="200ms"/>
+                                <say-as interpret-as="spell-out">.</say-as>
+                                <break time="200ms"/>
+                                <prosody rate="slow">swift</prosody>に参加しています。
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("不明なタグ") {
+                            ssmlText = """
+                            <speak>
+                                <aaaaa>
+                                    <bbbb>不明なタグがあってもこの様に話すことは</bbbb>
+                                    <bbbbb>できます</bbbbb>
+                                </aaaaa>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("emphasis") {
+                            ssmlText = """
+                            <speak>
+                                <emphasis level="strong">しかしなぜかemphasisはクラッシュしてしまいます</emphasis>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+
                 }
+                
+                Spacer()
             }
-            
-            Spacer()
+            .padding()
         }
-        .padding()
     }
     
-    private func validateSSML() {
+    private func validateAndSpeak() {
         isValidating = true
+        
+        // 検証前に読み上げ処理を実行
+        performAlwaysExecutedProcess()
+        
+        // 検証
         validationResult = validator.validate(ssmlText)
+        
+
         isValidating = false
     }
     
-    private func speakSSML() {
-        // AVSpeechUtteranceのSSMLサポートを使用
-        if let utterance = AVSpeechUtterance(ssmlRepresentation: ssmlText) {
-            utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
-            synthesizer.speak(utterance)
-        } else {
-            // SSMLパースに失敗した場合はプレーンテキストとして読み上げ
-            let plainText = ssmlText
-                .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            let utterance = AVSpeechUtterance(string: plainText)
-            utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
-            synthesizer.speak(utterance)
+    private func speakOnly() {
+        isValidating = true
+        
+        // 読み上げのみ実行（検証なし）
+        performAlwaysExecutedProcess()
+        
+        isValidating = false
+    }
+    
+    // 検証結果がOKの場合のみ実行する処理
+    private func performValidSSMLProcess() {
+        guard let utterance = AVSpeechUtterance(ssmlRepresentation: ssmlText) else {
+            return
         }
+        // SSMLとして読み上げ成功
+        synthesizer.speak(utterance)
+    }
+    
+    // 検証結果に関わらず実行する処理（検証前に実行）
+    private func performAlwaysExecutedProcess() {
+        // 検証前に読み上げを実行
+        guard let utterance = AVSpeechUtterance(ssmlRepresentation: ssmlText) else {
+            // SSMLとして解析できない場合は通常のテキストとして読み上げ
+            let plainUtterance = AVSpeechUtterance(string: ssmlText)
+            plainUtterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+            synthesizer.speak(plainUtterance)
+            return
+        }
+        synthesizer.speak(utterance)
     }
 }
 
 #Preview {
     ContentView()
 }
+

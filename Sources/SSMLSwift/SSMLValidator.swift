@@ -59,15 +59,21 @@ public class SSMLValidator {
         // speakタグの有無をチェック
         let hasSpeak = trimmedSSML.hasPrefix("<speak") && trimmedSSML.hasSuffix("</speak>")
         
+        // emphasisタグの存在チェック
+        let hasEmphasis = usedTags.contains("emphasis")
+        
         // 有効性の判定：
-        // 1. speakタグがある場合は常に有効
-        // 2. speakタグがなくても、全てのタグがサポートされていれば有効
-        let isValid = hasSpeak || unsupported.isEmpty
+        // 1. emphasisタグが含まれている場合は無効
+        // 2. speakタグがある場合は有効（emphasisがない場合）
+        // 3. speakタグがなくても、全てのタグがサポートされていれば有効
+        let isValid = !hasEmphasis && (hasSpeak || unsupported.isEmpty)
         
         // エラーメッセージの生成
         var errorMessage: String? = nil
         if !isValid {
-            if !hasSpeak && !unsupported.isEmpty {
+            if hasEmphasis {
+                errorMessage = "Contains emphasis tag which has no effect in Apple TTS"
+            } else if !hasSpeak && !unsupported.isEmpty {
                 errorMessage = "Contains unsupported tags without <speak> wrapper: \(unsupported.sorted().joined(separator: ", "))"
             }
         }
