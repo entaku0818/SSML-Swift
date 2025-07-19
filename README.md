@@ -6,6 +6,12 @@ Apple TTS (Text-to-Speech) のSSML対応状況を検証するSwiftライブラ�
 
 SSMLSwiftは、文字列を受け取ってSSML形式の妥当性とApple TTSでサポートされているタグを一度にチェックするシンプルなライブラリです。
 
+
+## 要件
+- iOS 16.0+ / macOS 13.0+ / tvOS 16.0+ / watchOS 9.0+
+- Swift 5.9+
+
+- 
 ## 機能
 
 - ✅ SSML形式の妥当性チェック
@@ -50,7 +56,7 @@ if result.isValidSSML {
 ```
 
 ## Apple TTSでサポートされているSSMLタグ
-
+- こちらは作者が実際に音声を発声できるか確かめたものです。
 | タグ | サポート状況 | 説明 |
 |------|------------|------|
 | `<speak>` | ✅ | ルート要素 |
@@ -89,19 +95,5 @@ public struct SSMLValidationResult {
 }
 ```
 
-## 要件
 
-- iOS 16.0+ / macOS 13.0+ / tvOS 16.0+ / watchOS 9.0+
-- Swift 5.9+
 
-## ライセンス
-
-MIT License
-
-## 貢献
-
-Issues、Pull Requestsは歓迎です。
-
-## 作者
-
-[Your Name]
