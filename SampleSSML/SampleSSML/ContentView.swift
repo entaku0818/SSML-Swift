@@ -97,8 +97,105 @@ struct ContentView: View {
                 
                 // サンプルSSMLボタン
                 VStack(spacing: 15) {
+                    Text("HAKATA.swift Demo 🎉:")
+                        .font(.headline)
+                    
+                    VStack(spacing: 10) {
+                        VStack(spacing: 10) {
+                            Button("あいさつ１: 通常の読み上げ") {
+                                // Create an utterance.
+                                let utterance = AVSpeechUtterance(string: "こんにちは！今日はHAKATA.swiftに参加しています。")
+
+                                // Configure the utterance.
+                                utterance.rate = 0.57
+                                utterance.pitchMultiplier = 0.8
+                                utterance.postUtteranceDelay = 0.2
+                                utterance.volume = 0.8
+
+                                // Japanese voice
+                                let voice = AVSpeechSynthesisVoice(language: "ja-JP")
+
+                                // Assign the voice to the utterance.
+                                utterance.voice = voice
+
+                                synthesizer.speak(utterance)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .frame(maxWidth: .infinity)
+                        }
+                        
+                        Button("あいさつ２　HAKATA.swift") {
+                            ssmlText = """
+                            <speak>
+                                こんにちは！
+                                今日はHAKATA.swiftに参加しています。
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
+
+                        Button("あいさつ3: SSML でHAKATA.(ドット)swift") {
+                            ssmlText = """
+                            <speak>
+                                <prosody volume="loud">こんにちは！</prosody>
+                                今日は<prosody rate="slow">HAKATA</prosody>
+                                <break time="200ms"/>
+                                ドット
+                                <break time="200ms"/>
+                                <prosody rate="slow">swift</prosody>に参加しています。
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
+
+
+                        Button("英語と日本語") {
+                            ssmlText = """
+                            <speak>
+                                今日は<lang xml:lang="en-US">AVSpeechUtterance</lang>について話します。
+                                <break time="500ms"/>
+                                <lang xml:lang="en-US">This is AVSpeechUtterance class.</lang>
+                                <break time="300ms"/>
+                                音声合成のためのクラスです。
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
+
+
+                        Button("不明なタグ") {
+                            ssmlText = """
+                            <speak>
+                                <aaaaa>
+                                    <bbbb>不明なタグがあった場合に話すことはできます</bbbb>
+                                </aaaaa>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
+
+
+
+                        Button("emphasis") {
+                            ssmlText = """
+                            <speak>
+                                <emphasis level='strong'>emphasisはどうなる？</emphasis>
+                            </speak>
+                            """
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(maxWidth: .infinity)
+                    }
+                    
+
+                    
                     Text("Basic SSML Examples:")
                         .font(.headline)
+                        .padding(.top)
                     
                     HStack {
                         Button("AVFoundation Example") {
@@ -289,56 +386,6 @@ struct ContentView: View {
                         .buttonStyle(.bordered)
                     }
                     
-                    Text("HAKATA.swift Demo 🎉:")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    HStack {
-                        Button("HAKATA.swift") {
-                            ssmlText = """
-                            <speak>
-                                こんにちは！
-                                今日はHAKATA.swiftに参加しています。
-                            </speak>
-                            """
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button("HAKATA.(ドット)swift") {
-                            ssmlText = """
-                            <speak>
-                                こんにちは！
-                                今日は<prosody rate="slow">HAKATA</prosody>
-                                <break time="200ms"/>
-                                <say-as interpret-as="spell-out">.</say-as>
-                                <break time="200ms"/>
-                                <prosody rate="slow">swift</prosody>に参加しています。
-                            </speak>
-                            """
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button("不明なタグ") {
-                            ssmlText = """
-                            <speak>
-                                <aaaaa>
-                                    <bbbb>不明なタグがあってもこの様に話すことは</bbbb>
-                                    <bbbbb>できます</bbbbb>
-                                </aaaaa>
-                            </speak>
-                            """
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button("emphasis") {
-                            ssmlText = """
-                            <speak>
-                                <emphasis level="strong">しかしなぜかemphasisはクラッシュしてしまいます</emphasis>
-                            </speak>
-                            """
-                        }
-                        .buttonStyle(.bordered)
-                    }
 
 
                 }

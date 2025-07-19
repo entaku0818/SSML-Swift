@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ssmlSwift}",
+            "name": "Debug SSMLSwiftDemo",
+            "program": "${workspaceFolder:ssmlSwift}/.build/debug/SSMLSwiftDemo",
+            "preLaunchTask": "swift: Build Debug SSMLSwiftDemo"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ssmlSwift}",
+            "name": "Release SSMLSwiftDemo",
+            "program": "${workspaceFolder:ssmlSwift}/.build/release/SSMLSwiftDemo",
+            "preLaunchTask": "swift: Build Release SSMLSwiftDemo"
+        }
+    ]
+}
